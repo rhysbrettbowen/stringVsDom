@@ -1,0 +1,152 @@
+<head></head>
+<body>
+	<div id="template-results"></div>
+	<button id="refresh" onclick="location.reload();"></button>
+	<script type="text/javascript">
+
+var data = {
+	heading: "HEADING",
+	listName: "LIST NAME",
+	list: [
+		{name: "ITEM 1"},
+		{name: "ITEM 2"},
+		{name: "ITEM 3"},
+		{name: "ITEM 4"},
+		{name: "ITEM 5"},
+		{name: "ITEM 6"}
+	]
+}
+
+var stringTemplate = function(data) {
+	var str = '<div class="Header">';
+	str += data.heading;
+	str += '<div class="body"><div class="list-heading">';
+	str += data.listName;
+	str += '</div>';
+	str +='<ul>';
+	for (var i = 0; i < data.list.length; i++) {
+		str += '<li>';
+		str += data.list[0].name;
+		str += '</li>';
+	}
+	str += '</ul></div></div>';
+	return str;
+};
+
+var domTemplate = function(data) {
+	var base = document.createElement('div');
+	var div = document.createElement('div');
+	div.className = 'Header';
+	div.innerText = data.heading;
+	var body = document.createElement('div');
+	body.className = 'body';
+	var listHead = document.createElement('div');
+	listHead.className = 'list-heading';
+	listHead.innerText = data.listName;
+	var list = document.createElement('ul');
+	for (var i = 0; i < data.list.length; i++) {
+		var li = document.createElement('li');
+		li.innerText = data.list[i].name;
+		list.appendChild(li);
+	}
+	body.appendChild(listHead);
+	body.appendChild(list);
+	base.appendChild(div);
+	base.appendChild(body);
+	return base;
+};
+
+var dom = domTemplate({
+	heading: '',
+	listName: '',
+	list: []
+});
+
+var bindingTemplate = function(data) {
+	var base = domTemplate(data);
+	div = base.firstChild;
+	listHead = base.childNodes[1].childNodes[0];
+	list = base.childNodes[1].childNodes[1];
+	return {
+		dom: base,
+		binding: {
+			'heading': function(text) {
+				if (div.firstChild && div.firstChild.nodeType == 3)
+					div.removeChild(div.firstChild);
+				div.insertAdjacentHTML('afterbegin', text);
+			},
+			'listName': function(text) {
+				if (listHead.firstChild && listHead.firstChild.nodeType == 3)
+					listHead.removeChild(listHead.firstChild);
+				listHead.insertAdjacentHTML('afterbegin', text);
+			},
+			'list': function(arr) {
+				list.innerHTML = '';
+				for (var i = 0; i < arr.length; i++) {
+					var li = document.createElement('li');
+					li.innerText = arr[0].name;
+					list.appendChild(li);
+				}
+			}
+		}
+	};
+};
+
+var testSlices = [
+	10,
+	100,
+	400,
+	800,
+	1200,
+	1800,
+	3000,
+	5000,
+	7500,
+	10000
+];
+
+var table = '<table><tr><td>#</td><td>fastString</td><td>string</td><td>dom</td><td>bindings</td></tr>';
+
+
+
+for (var i = 0; i < testSlices.length; i++) {
+	table += '<tr><td>' + testSlices[i] +'</td>'
+
+	// fast string
+	var now = new Date();
+	var str = ''
+	for (var n = 0; n < testSlices[i]; n++) {
+		str += '<div>' + stringTemplate(data) + '</div>';
+	}
+	document.createElement('div').innerHTML = str;
+	table += '<td>' + ((new Date()) - now) + '</td>';
+
+	// string
+	now = new Date();
+	for (var n = 0; n < testSlices[i]; n++) {
+		document.createElement('div').innerHTML = stringTemplate(data);
+	}
+	table += '<td>' + ((new Date()) - now) + '</td>';
+
+	// dom
+	now = new Date();
+	for (var n = 0; n < testSlices[i]; n++) {
+		domTemplate(data);
+	}
+	table += '<td>' + ((new Date()) - now) + '</td>';
+
+	// dom with binding
+	now = new Date();
+	for (var n = 0; n < testSlices[i]; n++) {
+		var obj = bindingTemplate(data);
+	}
+	table += '<td>' + ((new Date()) - now) + '</td></tr>';
+};
+
+table += '</table>'
+
+document.getElementById('tepmlate-results').innerHTML = table;
+
+	</script>
+
+</body>
